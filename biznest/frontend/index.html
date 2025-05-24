@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BizNest Agent Interaction</title>
+</head>
+<body>
+    <h1>BizNest Agent Interaction</h1>
+
+    <input type="text" id="commandInput" placeholder="Enter command for Alex">
+    <button id="sendCommandButton">Send Command to Alex</button>
+    <p id="responseOutput"></p>
+
+    <script>
+        const commandInput = document.getElementById('commandInput');
+        const sendCommandButton = document.getElementById('sendCommandButton');
+        const responseOutput = document.getElementById('responseOutput');
+
+        sendCommandButton.addEventListener('click', async () => {
+            const commandText = commandInput.value;
+            if (!commandText.trim()) {
+                responseOutput.textContent = 'Please enter a command.';
+                return;
+            }
+
+            responseOutput.textContent = 'Sending command...';
+
+            try {
+                const response = await fetch('http://127.0.0.1:5000/api/agent/alex/command', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ command: commandText }),
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    responseOutput.textContent = 'Alex says: ' + data.reply;
+                } else {
+                    const errorData = await response.json();
+                    responseOutput.textContent = `Error: ${response.status} - ${errorData.error || 'Failed to get reply.'}`;
+                    console.error('Error from backend:', errorData);
+                }
+            } catch (error) {
+                responseOutput.textContent = 'Failed to send command. Check console for details.';
+                console.error('Fetch error:', error);
+            }
+        });
+    </script>
+</body>
+</html>
